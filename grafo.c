@@ -492,7 +492,31 @@ unsigned int grau(vertice v, int direcao, grafo g);
 // se todo vértice em C é vizinho de todos os outros vértices de C em g
 
 int clique(lista l, grafo g){
-        char *
+    for (no n=primeiro_no(l); n!=NULL; n=proximo_no(n)) {
+        vertice v = conteudo(n);
+        lista vizinhos = vizinhanca(v,0);
+        unsigned int todos_nos = tamanho_lista(l);
+        for (no auxN=primeiro_no(vizinhos); auxN!=NULL; auxN=proximo_no(auxN)) {
+            if(todos_nos == 0)
+                break;
+            vertice auxV = conteudo(auxN);
+            for (no verifiyNode=primeiro_no(l); verifiyNode!=NULL; verifiyNode=proximo_no(verifiyNode)) {
+                vertice verifyVertice = conteudo(n);                
+                if(strcmp(verifyVertice->nome,auxV->nome) == 0){
+                    todos_nos--;
+                    break;
+                }   
+            }
+        }
+        if(todos_nos != 0)
+            return 0;
+    }  
+    return 1;
+    // faz um loop em cima de cada elemento da lista l      
+    // para cada elemento pega sua vizinhaca
+    // se a vizinhaca conter todos os elementos da lista l continua
+    // se não conter retorna 0
+
 
 
 }
@@ -503,7 +527,10 @@ int clique(lista l, grafo g){
 //
 // um vértice é simplicial no grafo se sua vizinhança é uma clique
 
-int simplicial(vertice v, grafo g);
+int simplicial(vertice v, grafo g){
+    lista vizinhos = vizinhanca(v,0);
+    return clique(vizinhos,g);
+}
 
 //------------------------------------------------------------------------------
 // devolve 1, se g é um grafo cordal ou
