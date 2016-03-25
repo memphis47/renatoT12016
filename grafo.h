@@ -117,7 +117,7 @@ grafo copia_grafo(grafo g);
 // se direcao == 1, v é um vértice de um grafo direcionado e a função
 //                  devolve sua vizinhanca de saída
 
-lista vizinhanca(vertice v, int direcao);
+lista vizinhanca(vertice v, int direcao, grafo g);
 
 //------------------------------------------------------------------------------
 // devolve o grau do vértice v
@@ -131,7 +131,7 @@ lista vizinhanca(vertice v, int direcao);
 // se direcao == 1, v é um vértice de um grafo direcionado
 //                  e a função devolve seu grau de saída
 
-unsigned int grau(vertice v, int direcao);
+unsigned int grau(vertice v, int direcao, grafo g);
 
 //------------------------------------------------------------------------------
 // devolve 1, se o conjunto dos vertices em l é uma clique em g, ou
