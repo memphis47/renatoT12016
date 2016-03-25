@@ -166,7 +166,7 @@ static vertice cria_vertice(grafo g, const char *nome){
 //------------------------------------------------------------------------------
 // destroi um vertice
 static void destroi_vertice(vertice v){
-	destroi_lista(v->lista_vizinhos, (int (*)(void *) destroi_vizinho));
+	destroi_lista(v->lista_vizinhos, (int (*)(void *)) destroi_vizinho);
 	free(v->nome);
 	free(v);
 }
@@ -295,8 +295,8 @@ grafo le_grafo(FILE *input){
 
     	for (Agnode_t *Av=agfstnode(Ag); Av; Av=agnxtnode(Ag,Av)) {
         	for (Agedge_t *Ae=agfstout(Ag,Av); Ae; Ae=agnxtout(Ag,Ae)) {
-            		vertice u = busca_vertice(g, agnameof(agtail(Ae)));
-            		vertice v = busca_vertice(g, agnameof(aghead(Ae)));
+            		vertice u = v_busca(g, agnameof(agtail(Ae)));
+            		vertice v = v_busca(g, agnameof(aghead(Ae)));
             		cria_vizinhos(g, u, v, get_peso(Ae));
         	}
     	}
