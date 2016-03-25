@@ -69,16 +69,17 @@ static grafo cria_grafo(const char *nome, int direcionado, int ponderado){
     if(g == NULL){
 	printf("Sem memoria para alocas.\n");
     }else{
-	g->nome = malloc((strlen(nome) +1) * sizeof(char));
-	strcpy(g->nome, nome);
-	g->direcionado = direcionado;
-	g->ponderado = ponderado;
-	g->n_vertices = 0;
-	g->n_arestas = 0;
-	g->vertices = malloc(VERTICE_BLOC * sizeof(vertice));
+	    g->nome = malloc((strlen(nome) +1) * sizeof(char));
+	    strcpy(g->nome, nome);
+	    g->direcionado = direcionado;
+	    g->ponderado = ponderado;
+	    g->n_vertices = 0;
+	    g->n_arestas = 0;
+	    g->vertices = malloc(VERTICE_BLOC * sizeof(vertice));
 
-	return g;
+	    return g;
     }
+    return NULL;
 }
 
 //------------------------------------------------------------------------------
@@ -401,26 +402,26 @@ grafo escreve_grafo(FILE *output, grafo g){
 grafo copia_grafo(grafo g){
 	if(g == NULL)
 		printf("Nao tem grafo. \n");
-
-	
+    else{
     	grafo copy_g = malloc(sizeof(grafo)); //aloca memoria pro grafo
 
     	if(copy_g == NULL){
-		printf("Sem memoria para alocas.\n");
+		    printf("Sem memoria para alocas.\n");
     	}else{
-		copy_g->nome = malloc((strlen(g->nome) +1) * sizeof(char));
-		strcpy(copy_g->nome, g->nome);
-		copy_g->direcionado = g->direcionado;
-		copy_g->ponderado = g->ponderado;
-		copy_g->n_vertices = g->n_vertices;
-		copy_g->n_arestas = g->n_arestas;
+		    copy_g->nome = malloc((strlen(g->nome) +1) * sizeof(char));
+		    strcpy(copy_g->nome, g->nome);
+		    copy_g->direcionado = g->direcionado;
+		    copy_g->ponderado = g->ponderado;
+		    copy_g->n_vertices = g->n_vertices;
+		    copy_g->n_arestas = g->n_arestas;
 
-		copy_g->vertices = malloc(VERTICE_BLOC * sizeof(vertice));
-		//fiquei em duvida se o for resolvia a copia ou nao D:
-		for(int i = 0; i < g->n_vertices; i++){
-			copy_g->vertices[i] = g->vertices[i];
-		}
-
+		    copy_g->vertices = malloc(VERTICE_BLOC * sizeof(vertice));
+		    //fiquei em duvida se o for resolvia a copia ou nao D:
+		    for(int i = 0; i < g->n_vertices; i++){
+			    copy_g->vertices[i] = g->vertices[i];
+		    }
+        }
+    }
 	return g;
 }
 
@@ -543,5 +544,17 @@ int simplicial(vertice v, grafo g){
 // tal que
 //     v_i é simplicial em G - v_1 - ... - v_{i-1}
 
-int cordal(grafo g);
+int cordal(grafo g){
+    grafo copy = copia_grafo(g);
+    vertice *vertices =  copy->vertices;
+    int tam = copy->n_vertices;
+    int i = 0 ;
+    while(i < tam ){
+        if(simplicial(vertices[0],g) == 0)
+            return 0; 
+        i++;
+        destroi_vertice(vertices[0]);
+    }
+    return 1;
+}
 //grafo g = malloc(sizeof(struct grafo)); //aloca memoria pro grafo
