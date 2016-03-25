@@ -25,12 +25,12 @@
 // 
 // o peso default de uma aresta é 0
 
-typedef struct *grafo{
-    char nome;                      //nome do grafo
+typedef struct grafo{
+    char *nome;                      //nome do grafo
     int direcionado;                // 1, se o grafo é direcionado, 0 se não é 
     int ponderado;                  // 1, se o grafo tem pesos nas arestas/arcos, 0 se não é     
-    unsigned int n_vertices;        //numero de vertices
-    unsigned int n_arestas;         //numero de arestas
+    int n_vertices;        //numero de vertices
+    int n_arestas;         //numero de arestas
     vertice *vertices;              //apontador para a estrutura de vertices
 };
 
@@ -41,9 +41,9 @@ typedef struct *grafo{
 
 typedef struct vertice{
     char *nome;                     // nome do vertice
-    unsigned int id;                // id = posição do vertice no vetor de vertices do grafo, serve para facilitar a busca de vertices
-    lista lista_vizinhos                // lista com os vizinhos do vertice, na função de vizinhança você passa uma lista !!!!
-    unsigned int grau;              // grau do vertice
+    int id;                // id = posição do vertice no vetor de vertices do grafo, serve para facilitar a busca de vertices
+    lista lista_vizinhos;                // lista com os vizinhos do vertice, na função de vizinhança você passa uma lista !!!!
+    int grau;              // grau do vertice
     int direcao;		    // se for 0, nao é direcionado, se for 1 é de saida, se for -1 é de entrada (ACHOO que é isso)
 };
 
@@ -60,7 +60,7 @@ typedef struct struct_vizinhos{
 // cria e devolve um  grafo g
 
 static grafo cria_grafo(const char *nome, int direcionado, int ponderado){
-    grafo g = malloc(sizeof(struct grafo)); //aloca memoria pro grafo
+    grafo g = malloc(sizeof(grafo)); //aloca memoria pro grafo
 
     if(g == NULL){
 	printf("Sem memoria para alocas.\n");
@@ -81,7 +81,7 @@ static grafo cria_grafo(const char *nome, int direcionado, int ponderado){
 // cria um vizinho e insere na lista de vizinhos do vertice de origem e/ou na de destino tambem
 // se ele nao for direcionado
 
-static void cria_vizinhaca(grafo, vertice v_origem, vertice v_destino, long int peso){
+static void cria_vizinhaca(grafo g, vertice v_origem, vertice v_destino, long int peso){
     struct_vizinhos vizinho = malloc(sizeof(struct_vizinhos));
 
     if(vizinho == NULL){
@@ -90,7 +90,7 @@ static void cria_vizinhaca(grafo, vertice v_origem, vertice v_destino, long int 
 	vizinho->v_origem = v_origem;
 	vizinho->v_destino = v_destino;
 	vizinho->peso = peso;
-	insere_lista(vizinhos, v_origem->lista_vizinhos);
+	insere_lista(vizinho, v_origem->lista_vizinhos);
 	v_origem->grau++;
 	v_destino->grau++;
 
@@ -103,7 +103,7 @@ static void cria_vizinhaca(grafo, vertice v_origem, vertice v_destino, long int 
 			vizinho2->v_origem = v_destino;
 			vizinho2->v_destino = v_origem;
 			vizinho2->peso = peso;
-			insere_lista(vizinhos, v_destino->lista_vizinhos);
+			insere_lista(vizinho, v_destino->lista_vizinhos);
 			v_destino->grau++;
 			v_origem->grau++;
 		}
@@ -116,7 +116,7 @@ static void cria_vizinhaca(grafo, vertice v_origem, vertice v_destino, long int 
 			vizinho3->v_origem = v_origem;
 			vizinho3->v_destino = v_destino;
 			vizinho3->peso = peso;
-			insere_lista(vizinhos, v_origem->lista_vizinhos);
+			insere_lista(vizinho, v_origem->lista_vizinhos);
 			v_destino->grau++;
 			v_origem->grau++;
 		}
@@ -153,8 +153,8 @@ static vertice cria_vertice(grafo g, const char *nome){
 		g->vertices[v->id] = v;
 		g->n_vertices++;
 
-		if ((g->n_vertices % BLOCO_ALOCACAO_VERTICES) == 0) {
-        		long unsigned int novo_tamanho = (g->n_vertices / BLOCO_ALOCACAO_VERTICES + 1) * BLOCO_ALOCACAO_VERTICES * sizeof(vertice);
+		if ((g->n_vertices % VERTICE_BLOC) == 0) {
+        		long int novo_tamanho = (g->n_vertices / VERTICE_BLOC + 1) * VERTICE_BLOC * sizeof(vertice);
         		g->vertices = realloc(g->vertices, novo_tamanho);
     		}
 
@@ -166,7 +166,7 @@ static vertice cria_vertice(grafo g, const char *nome){
 //------------------------------------------------------------------------------
 // destroi um vertice
 static void destroi_vertice(vertice v){
-	destroi_lista(v->lista_vizinhos, (int (*)(void *) destroi_vizinho);
+	destroi_lista(v->lista_vizinhos, (int (*)(void *) destroi_vizinho));
 	free(v->nome);
 	free(v);
 }
@@ -282,12 +282,12 @@ grafo le_grafo(FILE *input){
 	if (input == NULL)
 		return NULL;
 	
-	Agraph_t *ag = agread(input, NULL);
+	Agraph_t *Ag = agread(input, NULL);
 	
-	if(ag == NULL)
+	if(Ag == NULL)
 		return NULL;
 
-	grafo g = cria_grafo(agnameof(ag), agisdirected(ag), contem_pesos(ag));
+	grafo g = cria_grafo(agnameof(Ag), agisdirected(Ag), contem_pesos(Ag));
 
 	for (Agnode_t *Av=agfstnode(Ag); Av; Av=agnxtnode(Ag,Av)) {
         	cria_vertice(g, agnameof(Av));
@@ -301,7 +301,7 @@ grafo le_grafo(FILE *input){
         	}
     	}
 
-	agclose(ag);
+	agclose(Ag);
 	return g;
 }  
 
@@ -315,7 +315,7 @@ grafo le_grafo(FILE *input){
 // destroi_lista()
 
 int destroi_grafo(void *g){
-    if(*g == null)
+    if(g == NULL)
         return 0;
     for (int i=0; i<((grafo) g)->n_vertices; i++)
         destroi_vertice(((grafo) g)->vertices[i]);
@@ -342,7 +342,7 @@ grafo escreve_grafo(FILE *output, grafo g){
 	if(g == NULL || output == NULL)
 		return NULL;
 
-	Agraph_t *ag
+	Agraph_t *ag;
 	Agsym_t *peso;
 
 	char peso_s[MAX_STRING_SIZE];
@@ -398,12 +398,12 @@ grafo copia_grafo(grafo g){
 		printf("Nao tem grafo. \n");
 
 	
-    	grafo copy_g = malloc(sizeof(struct grafo)); //aloca memoria pro grafo
+    	grafo copy_g = malloc(sizeof(grafo)); //aloca memoria pro grafo
 
     	if(copy_g == NULL){
 		printf("Sem memoria para alocas.\n");
     	}else{
-		copy_g->nome = malloc((strlen(nome) +1) * sizeof(char));
+		copy_g->nome = malloc((strlen(g->nome) +1) * sizeof(char));
 		strcpy(copy_g->nome, g->nome);
 		copy_g->direcionado = g->direcionado;
 		copy_g->ponderado = g->ponderado;
@@ -412,7 +412,7 @@ grafo copia_grafo(grafo g){
 
 		copy_g->vertices = malloc(VERTICE_BLOC * sizeof(vertice));
 		//fiquei em duvida se o for resolvia a copia ou nao D:
-		for(i = 0; i < g->n_vertice; i++){
+		for(int i = 0; i < g->n_vertices; i++){
 			copy_g->vertices[i] = g->vertices[i];
 		}
 
@@ -454,7 +454,11 @@ unsigned int grau(vertice v, int direcao);
 // um conjunto C de vértices de um grafo é uma clique em g 
 // se todo vértice em C é vizinho de todos os outros vértices de C em g
 
-int clique(lista l, grafo g);
+int clique(lista l, grafo g){
+        char *
+
+
+}
 
 //------------------------------------------------------------------------------
 // devolve 1, se v é um vértice simplicial em g, ou
@@ -475,4 +479,5 @@ int simplicial(vertice v, grafo g);
 // tal que
 //     v_i é simplicial em G - v_1 - ... - v_{i-1}
 
-int cordal(grafo g);grafo g = malloc(sizeof(struct grafo)); //aloca memoria pro grafo
+int cordal(grafo g);
+//grafo g = malloc(sizeof(struct grafo)); //aloca memoria pro grafo
