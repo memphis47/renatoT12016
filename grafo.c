@@ -13,6 +13,32 @@
 #define VERTICE_BLOC 64
 
 //------------------------------------------------------------------------------
+// estrutura dos vizinhos
+
+typedef struct adjacencia{
+    long int peso;
+    vertice v_origem; 			//vertice de origem
+    vertice v_destino;                  //vertice de destino
+} *adjacencia;
+
+//------------------------------------------------------------------------------
+// (apontador para) estrutura de dados que representa um vértice do grafo
+// 
+// cada vértice tem um nome que é uma "string"
+
+struct vertice{
+    char *nome;                     // nome do vertice
+    unsigned int id;                // id = posição do vertice no vetor de vertices do grafo, serve para facilitar a busca de vertices
+    int padding;		// padding para alinhar a struct
+    lista adjacencias_entrada;
+    lista adjacencias_saida;
+
+    unsigned int grau_entrada;              // grau do vertice
+    unsigned int grau_saida;              // grau do vertice
+    //int direcao;		    // se for 0, nao é direcionado, se for 1 é de saida, se for -1 é de entrada (ACHOO que é isso)
+};
+
+//------------------------------------------------------------------------------
 // (apontador para) estrutura de dados para representar um grafo
 // 
 // o grafo pode ser
@@ -25,40 +51,14 @@
 // 
 // o peso default de uma aresta é 0
 
-typedef struct grafo{
+struct grafo{
     char *nome;                      //nome do grafo
-    int pad;
     int direcionado;                // 1, se o grafo é direcionado, 0 se não é 
     int ponderado;                  // 1, se o grafo tem pesos nas arestas/arcos, 0 se não é     
-    int n_vertices;        //numero de vertices
-    int n_arestas;         //numero de arestas
+    unsigned int n_vertices;        //numero de vertices
+    unsigned int n_arestas;         //numero de arestas
     vertice *vertices;              //apontador para a estrutura de vertices
 };
-
-//------------------------------------------------------------------------------
-// (apontador para) estrutura de dados que representa um vértice do grafo
-// 
-// cada vértice tem um nome que é uma "string"
-
-typedef struct vertice{
-    char *nome;                     // nome do vertice
-    int id;                // id = posição do vertice no vetor de vertices do grafo, serve para facilitar a busca de vertices
-    lista adjacencias_entrada;
-    lista adjacencias_saida;
-
-    int grau_entrada;              // grau do vertice
-    int grau_saida;              // grau do vertice
-    //int direcao;		    // se for 0, nao é direcionado, se for 1 é de saida, se for -1 é de entrada (ACHOO que é isso)
-};
-
-//------------------------------------------------------------------------------
-// estrutura dos vizinhos
-
-typedef struct adjacencia{
-    long int peso;
-    vertice v_origem; 			//vertice de origem
-    vertice v_destino;                  //vertice de destino
-} *adjacencia;
 
 //------------------------------------------------------------------------------
 // cria e devolve um  grafo g
@@ -86,7 +86,7 @@ static grafo cria_grafo(const char *nome, int direcionado, int ponderado){
 // cria um vizinho e insere na lista de vizinhos do vertice de origem e/ou na de destino tambem
 // se ele nao for direcionado
 
-static void cria_vizinhaca(grafo g, vertice v_origem, vertice v_destino, long int peso){
+static void cria_vizinhanca(grafo g, vertice v_origem, vertice v_destino, long int peso){
     adjacencia vizinho = malloc(sizeof(adjacencia));
 
     if(vizinho == NULL){
@@ -149,7 +149,7 @@ static vertice cria_vertice(grafo g, const char *nome){
 	}else{
 		v->id = g->n_vertices;
 		v->nome = malloc((strlen(nome) +1) *sizeof(char));
-		strcopy(v->nome, nome);
+		strcpy(v->nome, nome);
 		v->adjacencias_saida = constroi_lista();
                 v->adjacencias_entrada = constroi_lista();
                 v->grau_entrada = 0;
@@ -159,7 +159,7 @@ static vertice cria_vertice(grafo g, const char *nome){
 		g->n_vertices++;
 
 		if ((g->n_vertices % VERTICE_BLOC) == 0) {
-        		long int novo_tamanho = (g->n_vertices / VERTICE_BLOC + 1) * VERTICE_BLOC * sizeof(vertice);
+        		long unsigned int novo_tamanho = (g->n_vertices / VERTICE_BLOC + 1) * VERTICE_BLOC * sizeof(vertice);
         		g->vertices = realloc(g->vertices, novo_tamanho);
     		}
 
@@ -181,7 +181,7 @@ static void destroi_vertice(vertice v){
 // busca um vertice pelo nome do grafo
 
 static vertice v_busca(grafo g, char *nome){
-	for(int i = 0; i < g->n_vertices; i++){
+	for(unsigned int i = 0; i < g->n_vertices; i++){
 		if(strcmp(g->vertices[i]->nome, nome) == 0)
 			return g->vertices[i];
 	}
@@ -323,7 +323,7 @@ grafo le_grafo(FILE *input){
 int destroi_grafo(void *g){
     if(g == NULL)
         return 0;
-    for (int i=0; i<((grafo) g)->n_vertices; i++)
+    for (unsigned int i=0; i <((grafo) g)->n_vertices; i++)
         destroi_vertice(((grafo) g)->vertices[i]);
         
     free(((grafo) g)->vertices);
@@ -371,10 +371,10 @@ grafo escreve_grafo(FILE *output, grafo g){
 		peso = agattr(ag, AGEDGE, p_str, default_s);
 
 	Agnode_t **nodes = malloc(g->n_vertices * sizeof(Agnode_t*));
-	for(int i = 0; i < g->n_vertices; i++)
+	for(unsigned int i = 0; i < g->n_vertices; i++)
 		nodes[g->vertices[i]->id] = agnode(ag, g->vertices[i]->nome, TRUE);
 
-	for(int i = 0; i < g->n_vertices; i++){
+	for(unsigned int i = 0; i < g->n_vertices; i++){
 		vertice v = g->vertices[i];
 
 		for(no n = primeiro_no(v->adjacencias_saida); n != NULL; n = proximo_no(n)){
@@ -383,7 +383,7 @@ grafo escreve_grafo(FILE *output, grafo g){
 			Agedge_t *ae = agedge(ag, nodes[v->id], nodes [viz->v_destino->id], NULL, TRUE);
 				
 			if(g->ponderado){
-				sprintf(peso, "%ld", viz->peso);
+				sprintf(peso_s, "%ld", viz->peso);
 				agxset(ae, peso, peso_s);
 			}
 		}
@@ -402,47 +402,23 @@ grafo escreve_grafo(FILE *output, grafo g){
 grafo copia_grafo(grafo g){
 	if(g == NULL)
 		printf("Nao tem grafo. \n");
-    else{
-    	grafo copy_g = malloc(sizeof(grafo)); //aloca memoria pro grafo
+    	else{
+    		//grafo copy_g = malloc(sizeof(grafo)); //aloca memoria pro grafo
+		grafo copy_g = cria_grafo(g->nome, g->direcionado, g->ponderado);
 
-    	if(copy_g == NULL){
-		    printf("Sem memoria para alocas.\n");
-    	}else{
-		    copy_g->nome = malloc((strlen(g->nome) +1) * sizeof(char));
-		    strcpy(copy_g->nome, g->nome);
-		    copy_g->direcionado = g->direcionado;
-		    copy_g->ponderado = g->ponderado;
+    		if(copy_g == NULL){
+		    printf("Sem memoria para alocar.\n");
+    		}else{
 		    copy_g->n_vertices = g->n_vertices;
 		    copy_g->n_arestas = g->n_arestas;
 
-		    copy_g->vertices = malloc(VERTICE_BLOC * sizeof(vertice));
 		    //fiquei em duvida se o for resolvia a copia ou nao D:
-		    for(int i = 0; i < g->n_vertices; i++){
+		    for(unsigned int i = 0; i < g->n_vertices; i++){
 			    copy_g->vertices[i] = g->vertices[i];
 		    }
-        }
-    }
+        	}
+    	}	
 	return g;
-}
-
-//------------------------------------------------------------------------------
-// devolve a vizinhança do vértice v
-// 
-// se direcao == 0, v é um vértice de um grafo não direcionado
-//                  e a função devolve sua vizinhanca 
-//
-// se direcao == -1, v é um vértice de um grafo direcionado e a função
-//                   devolve sua vizinhanca de entrada
-//
-// se direcao == 1, v é um vértice de um grafo direcionado e a função
-//                  devolve sua vizinhanca de saída
-
-lista vizinhanca(vertice v, int direcao){
-    if(direcao==-1)
-        return vizinhaca_entrada(v);
-    else if (direcao == 1 || direcao == 0)
-        return vizinhaca_saida(v);
-    return NULL;
 }
 
 //------------------------------------------------------------------------------
@@ -470,10 +446,29 @@ lista vizinhanca_saida(vertice v){
     return viz;
 }
 
+//------------------------------------------------------------------------------
+// devolve a vizinhança do vértice v
+// 
+// se direcao == 0, v é um vértice de um grafo não direcionado
+//                  e a função devolve sua vizinhanca 
+//
+// se direcao == -1, v é um vértice de um grafo direcionado e a função
+//                   devolve sua vizinhanca de entrada
+//
+// se direcao == 1, v é um vértice de um grafo direcionado e a função
+//                  devolve sua vizinhanca de saída
+
+lista vizinhanca(vertice v, int direcao, grafo g){
+    if(direcao==-1)
+        return vizinhanca_entrada(v);
+    else if (direcao == 1 || direcao == 0)
+        return vizinhanca_saida(v);
+    return NULL;
+}
 
 //------------------------------------------------------------------------------
 // devolve o grau do vértice v
-// 
+// i
 // se direcao == 0, v é um vértice de um grafo não direcionado
 //                  e a função devolve seu grau
 //
@@ -495,7 +490,7 @@ unsigned int grau(vertice v, int direcao, grafo g);
 int clique(lista l, grafo g){
     for (no n=primeiro_no(l); n!=NULL; n=proximo_no(n)) {
         vertice v = conteudo(n);
-        lista vizinhos = vizinhanca(v,0);
+        lista vizinhos = vizinhanca(v,0,g);
         unsigned int todos_nos = tamanho_lista(l);
         for (no auxN=primeiro_no(vizinhos); auxN!=NULL; auxN=proximo_no(auxN)) {
             if(todos_nos == 0)
@@ -529,7 +524,7 @@ int clique(lista l, grafo g){
 // um vértice é simplicial no grafo se sua vizinhança é uma clique
 
 int simplicial(vertice v, grafo g){
-    lista vizinhos = vizinhanca(v,0);
+    lista vizinhos = vizinhanca(v,0,g);
     return clique(vizinhos,g);
 }
 
@@ -547,8 +542,8 @@ int simplicial(vertice v, grafo g){
 int cordal(grafo g){
     grafo copy = copia_grafo(g);
     vertice *vertices =  copy->vertices;
-    int tam = copy->n_vertices;
-    int i = 0 ;
+    unsigned int tam = copy->n_vertices;
+    unsigned int i = 0 ;
     while(i < tam ){
         if(simplicial(vertices[0],g) == 0)
             return 0; 
