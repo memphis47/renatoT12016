@@ -67,7 +67,7 @@ static grafo cria_grafo(const char *nome, int direcionado, int ponderado){
     grafo g = malloc(sizeof(grafo)); //aloca memoria pro grafo
 
     if(g == NULL){
-	printf("Sem memoria para alocas.\n");
+	printf("Sem memoria para alocar.\n");
     }else{
 	    g->nome = malloc((strlen(nome) +1) * sizeof(char));
 	    strcpy(g->nome, nome);
@@ -90,7 +90,7 @@ static void cria_vizinhanca(grafo g, vertice v_origem, vertice v_destino, long i
     adjacencia vizinho = malloc(sizeof(adjacencia));
 
     if(vizinho == NULL){
-	printf("Sem memoria para alocas.\n");
+	printf("Sem memoria para alocar.\n");
     } else{
 	vizinho->v_origem = v_origem;
 	vizinho->v_destino = v_destino;
@@ -103,7 +103,7 @@ static void cria_vizinhanca(grafo g, vertice v_origem, vertice v_destino, long i
 		adjacencia vizinho2 = malloc(sizeof(adjacencia));
 		
     		if(vizinho2 == NULL){
-			printf("Sem memoria para alocas.\n");
+			printf("Sem memoria para alocar.\n");
     		} else{
 			vizinho2->v_origem = v_destino;
 			vizinho2->v_destino = v_origem;
@@ -116,7 +116,7 @@ static void cria_vizinhanca(grafo g, vertice v_origem, vertice v_destino, long i
 		adjacencia vizinho3 = malloc(sizeof(adjacencia));
 		
     		if(vizinho3 == NULL){
-			printf("Sem memoria para alocas.\n");
+			printf("Sem memoria para alocar.\n");
     		} else{
 			vizinho3->v_origem = v_origem;
 			vizinho3->v_destino = v_destino;
@@ -145,7 +145,7 @@ static vertice cria_vertice(grafo g, const char *nome){
 	vertice v = malloc(sizeof(struct vertice));
 
 	if(v == NULL){
-		printf("Sem memoria para alocas.\n");
+		printf("Sem memoria para alocar.\n");
 	}else{
 		v->id = g->n_vertices;
 		v->nome = malloc((strlen(nome) +1) *sizeof(char));
@@ -512,9 +512,6 @@ int clique(lista l, grafo g){
     // para cada elemento pega sua vizinhaca
     // se a vizinhaca conter todos os elementos da lista l continua
     // se não conter retorna 0
-
-
-
 }
 
 //------------------------------------------------------------------------------
