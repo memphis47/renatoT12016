@@ -106,6 +106,14 @@ grafo escreve_grafo(FILE *output, grafo g);
 grafo copia_grafo(grafo g);
 
 //------------------------------------------------------------------------------
+
+lista vizinhanca_entrada(vertice v);
+
+//------------------------------------------------------------------------------
+
+lista vizinhanca_saida(vertice v);
+
+//------------------------------------------------------------------------------
 // devolve a vizinhança do vértice v
 // 
 // se direcao == 0, v é um vértice de um grafo não direcionado
