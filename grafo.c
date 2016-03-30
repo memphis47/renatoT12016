@@ -13,120 +13,110 @@
 #define VERTICE_BLOC 64
 
 //------------------------------------------------------------------------------
-// estrutura dos vizinhos
-
-typedef struct adjacencia{
-    long int peso;
-    vertice v_origem; 			//vertice de origem
-    vertice v_destino;                  //vertice de destino
-} *adjacencia;
-
-//------------------------------------------------------------------------------
-// (apontador para) estrutura de dados que representa um vértice do grafo
-// 
-// cada vértice tem um nome que é uma "string"
-
-struct vertice{
-    char *nome;                     // nome do vertice
-    unsigned int id;                // id = posição do vertice no vetor de vertices do grafo, serve para facilitar a busca de vertices
-    int padding;		// padding para alinhar a struct
-    lista adjacencias_entrada;
-    lista adjacencias_saida;
-
-    unsigned int grau_entrada;              // grau do vertice
-    unsigned int grau_saida;              // grau do vertice
-    //int direcao;		    // se for 0, nao é direcionado, se for 1 é de saida, se for -1 é de entrada (ACHOO que é isso)
-};
-
-//------------------------------------------------------------------------------
 // (apontador para) estrutura de dados para representar um grafo
-// 
+//
 // o grafo pode ser
 // - direcionado ou não
 // - com pesos nas arestas ou não
-// 
+//
 // além dos vértices e arestas, o grafo tem um nome, que é uma "string"
-// 
+//
 // num grafo com pesos nas arestas todas as arestas tem peso, que é um long int
-// 
+//
 // o peso default de uma aresta é 0
-
 struct grafo{
-    char *nome;                      //nome do grafo
-    int direcionado;                // 1, se o grafo é direcionado, 0 se não é 
-    int ponderado;                  // 1, se o grafo tem pesos nas arestas/arcos, 0 se não é     
-    unsigned int n_vertices;        //numero de vertices
-    unsigned int n_arestas;         //numero de arestas
-    vertice *vertices;              //apontador para a estrutura de vertices
+	char *nome; //nome do grafo
+	int direcionado; // 1, se o grafo é direcionado, 0 se não é
+	int ponderado; // 1, se o grafo tem pesos nas arestas/arcos, 0 se não é
+	unsigned int n_vertices; //numero de vertices
+	unsigned int n_arestas; //numero de arestas
+	vertice *vertices; //apontador para a estrutura de vertices
 };
-
+//------------------------------------------------------------------------------
+// (apontador para) estrutura de dados que representa um vértice do grafo
+//
+// cada vértice tem um nome que é uma "string"
+struct vertice{
+	char *nome; // nome do vertice
+	unsigned int id; // id = posição do vertice no vetor de vertices do grafo, serve para facilitar a busca de vertices
+	int padding; // padding para alinhar a struct
+	lista adjacencias_entrada;
+	lista adjacencias_saida;
+	unsigned int grau_entrada; // grau do vertice
+	unsigned int grau_saida; // grau do vertice
+};
+//------------------------------------------------------------------------------
+// estrutura dos vizinhos
+typedef struct adjacencia{
+	long int peso;
+	vertice v_origem; //vertice de origem
+	vertice v_destino; //vertice de destino
+} *adjacencia;
 //------------------------------------------------------------------------------
 // cria e devolve um  grafo g
 
 static grafo cria_grafo(const char *nome, int direcionado, int ponderado){
-    grafo g = malloc(sizeof(grafo)); //aloca memoria pro grafo
+    grafo g = malloc(sizeof(struct grafo)); //aloca memoria pro grafo
 
-    if(g == NULL){
-	printf("Sem memoria para alocar.\n");
-    }else{
-	    g->nome = malloc((strlen(nome) +1) * sizeof(char));
-	    strcpy(g->nome, nome);
-	    g->direcionado = direcionado;
-	    g->ponderado = ponderado;
-	    g->n_vertices = 0;
-	    g->n_arestas = 0;
-	    g->vertices = malloc(VERTICE_BLOC * sizeof(vertice));
+    if(g == NULL)
+	return 0;
+	
+    g->nome = malloc((strlen(nome) + 1) * sizeof(char));
+    strcpy(g->nome, nome);
+    g->direcionado = direcionado;
+    g->ponderado = ponderado;
+    g->n_vertices = 0;
+    g->n_arestas = 0;
+    g->vertices = malloc(VERTICE_BLOC * sizeof(vertice));
 
-	    return g;
-    }
-    return NULL;
+    return g;
 }
 
 //------------------------------------------------------------------------------
 // cria um vizinho e insere na lista de vizinhos do vertice de origem e/ou na de destino tambem
 // se ele nao for direcionado
 
-static void cria_vizinhanca(grafo g, vertice v_origem, vertice v_destino, long int peso){
-    adjacencia vizinho = malloc(sizeof(adjacencia));
+static void cria_vizinhanca(grafo g, vertice origem, vertice destino, long int peso){
+    adjacencia viz_1 = malloc(sizeof(struct adjacencia));
+    
+    if(viz_1 == NULL)
+	printf("Sem memoria");
+    else{
+    	viz_1->peso = peso;
+    	viz_1->v_origem = origem;
+    	viz_1->v_destino = destino;
+   	insere_lista(viz_1, origem->adjacencias_saida);
+    	origem->grau_saida++;
+    	destino->grau_entrada++;
 
-    if(vizinho == NULL){
-	printf("Sem memoria para alocar.\n");
-    } else{
-	vizinho->v_origem = v_origem;
-	vizinho->v_destino = v_destino;
-	vizinho->peso = peso;
-	insere_lista(vizinho, v_origem->adjacencias_saida);
-	v_origem->grau_saida++;
-	v_destino->grau_entrada++;
+    	if (!direcionado(g)) {
+        	// se o grafo não for direcionado, a aresta deve aparecer também na
+        	// lista de adjacencia do vertice dest
 
-	if(!direcionado(g)){
-		adjacencia vizinho2 = malloc(sizeof(adjacencia));
-		
-    		if(vizinho2 == NULL){
-			printf("Sem memoria para alocar.\n");
-    		} else{
-			vizinho2->v_origem = v_destino;
-			vizinho2->v_destino = v_origem;
-			vizinho2->peso = peso;
-			insere_lista(vizinho, v_destino->adjacencias_saida);
-			v_destino->grau_saida++;
-			v_origem->grau_entrada++;
+        	adjacencia viz_2 = malloc(sizeof(struct adjacencia));
+    		if(viz_2 == NULL)
+			printf("Sem memoria");
+    		else{
+        		viz_2->peso = peso;
+        		viz_2->v_origem = destino;
+        		viz_2->v_destino = origem;
+        		insere_lista(viz_2, destino->adjacencias_saida);
+        		destino->grau_saida++;
+        		origem->grau_entrada++;
 		}
-    	}else{
-		adjacencia vizinho3 = malloc(sizeof(adjacencia));
-		
-    		if(vizinho3 == NULL){
-			printf("Sem memoria para alocar.\n");
-    		} else{
-			vizinho3->v_origem = v_origem;
-			vizinho3->v_destino = v_destino;
-			vizinho3->peso = peso;
-			insere_lista(vizinho, v_origem->adjacencias_entrada);
+    	}
+   	else{
+        	adjacencia viz_3 = malloc(sizeof(struct adjacencia));
+    		if(viz_3 == NULL)
+			printf("Sem memoria");
+    		else{
+        		viz_3->peso = peso;
+        		viz_3->v_origem = origem;
+        		viz_3->v_destino = destino;
+        		insere_lista(viz_3, destino->adjacencias_entrada);
 		}
-	
-	}
+    	}
    }
-
    g->n_arestas++;
 }
 
@@ -145,7 +135,7 @@ static vertice cria_vertice(grafo g, const char *nome){
 	vertice v = malloc(sizeof(struct vertice));
 
 	if(v == NULL){
-		printf("Sem memoria para alocar.\n");
+		return 0;
 	}else{
 		v->id = g->n_vertices;
 		v->nome = malloc((strlen(nome) +1) *sizeof(char));
@@ -171,10 +161,10 @@ static vertice cria_vertice(grafo g, const char *nome){
 //------------------------------------------------------------------------------
 // destroi um vertice
 static void destroi_vertice(vertice v){
-	destroi_lista(v->adjacencias_saida, (int (*)(void *)) destroi_vizinho);
-        destroi_lista(v->adjacencias_entrada, (int (*)(void *)) destroi_vizinho);
-        free(v->nome);
-        free(v);
+    destroi_lista(v->adjacencias_saida, (int (*)(void *)) destroi_vizinho);
+    destroi_lista(v->adjacencias_entrada, (int (*)(void *)) destroi_vizinho);
+    free(v->nome);
+    free(v);
 }
 
 //------------------------------------------------------------------------------
@@ -285,12 +275,12 @@ char *nome_vertice(vertice v){
 //         NULL em caso de erro 
 
 grafo le_grafo(FILE *input){
-	if (input == NULL)
+	if (!input)
 		return NULL;
 	
 	Agraph_t *Ag = agread(input, NULL);
 	
-	if(Ag == NULL)
+	if(!Ag)
 		return NULL;
 
 	grafo g = cria_grafo(agnameof(Ag), agisdirected(Ag), contem_pesos(Ag));
@@ -321,11 +311,12 @@ grafo le_grafo(FILE *input){
 // destroi_lista()
 
 int destroi_grafo(void *g){
-    if(g == NULL)
-        return 0;
-    for (unsigned int i=0; i <((grafo) g)->n_vertices; i++)
+    if (!g) 
+	return 0;
+
+    for (unsigned int i=0; i<((grafo) g)->n_vertices; i++)
         destroi_vertice(((grafo) g)->vertices[i]);
-        
+    
     free(((grafo) g)->vertices);
     free(((grafo) g)->nome);
     free(g);
@@ -345,7 +336,7 @@ int destroi_grafo(void *g){
 //         NULL em caso de erro 
 
 grafo escreve_grafo(FILE *output, grafo g){
-	if(g == NULL || output == NULL)
+	if(!g || !output)
 		return NULL;
 
 	Agraph_t *ag;
@@ -371,6 +362,7 @@ grafo escreve_grafo(FILE *output, grafo g){
 		peso = agattr(ag, AGEDGE, p_str, default_s);
 
 	Agnode_t **nodes = malloc(g->n_vertices * sizeof(Agnode_t*));
+	
 	for(unsigned int i = 0; i < g->n_vertices; i++)
 		nodes[g->vertices[i]->id] = agnode(ag, g->vertices[i]->nome, TRUE);
 
@@ -380,7 +372,7 @@ grafo escreve_grafo(FILE *output, grafo g){
 		for(no n = primeiro_no(v->adjacencias_saida); n != NULL; n = proximo_no(n)){
 			adjacencia viz = conteudo(n);
 
-			Agedge_t *ae = agedge(ag, nodes[v->id], nodes [viz->v_destino->id], NULL, TRUE);
+			Agedge_t *ae = agedge(ag, nodes[v->id], nodes[viz->v_destino->id], NULL, TRUE);
 				
 			if(g->ponderado){
 				sprintf(peso_s, "%ld", viz->peso);
@@ -459,6 +451,8 @@ lista vizinhanca_saida(vertice v){
 //                  devolve sua vizinhanca de saída
 
 lista vizinhanca(vertice v, int direcao, grafo g){
+    if (!g)
+	return 0;
     if(direcao==-1)
         return vizinhanca_entrada(v);
     else if (direcao == 1 || direcao == 0)
@@ -479,10 +473,12 @@ lista vizinhanca(vertice v, int direcao, grafo g){
 //                  e a função devolve seu grau de saída
 
 unsigned int grau(vertice v, int direcao, grafo g){
-    if( direcao < 0)
-        return  v->grau_entrada;
-    else           // grau do vertice
-        return  v->grau_saida; 
+    	if (!g)
+		return 0;
+	if(direcao < 0)
+		return v->grau_entrada;
+	else
+		return v->grau_saida;
 }
 
 //------------------------------------------------------------------------------
@@ -517,6 +513,7 @@ int clique(lista l, grafo g){
     // para cada elemento pega sua vizinhaca
     // se a vizinhaca conter todos os elementos da lista l continua
     // se não conter retorna 0
+
 }
 
 //------------------------------------------------------------------------------
