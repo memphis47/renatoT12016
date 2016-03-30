@@ -551,4 +551,3 @@ int cordal(grafo g){
     }
     return 1;
 }
-//grafo g = malloc(sizeof(struct grafo)); //aloca memoria pro grafo
