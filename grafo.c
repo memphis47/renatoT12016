@@ -130,7 +130,6 @@ static int destroi_vizinho(adjacencia v){
 
 //------------------------------------------------------------------------------
 // cria, insere no grafo e retorna o vertice
-// faltou a direção, eu fiquei em duvida como colocar ela =/
 static vertice cria_vertice(grafo g, const char *nome){
 	vertice v = malloc(sizeof(struct vertice));
 
