@@ -478,7 +478,12 @@ lista vizinhanca(vertice v, int direcao, grafo g){
 // se direcao == 1, v é um vértice de um grafo direcionado
 //                  e a função devolve seu grau de saída
 
-unsigned int grau(vertice v, int direcao, grafo g);
+unsigned int grau(vertice v, int direcao, grafo g){
+    if( direcao < 0)
+        return  v->grau_entrada;
+    else           // grau do vertice
+        return  v->grau_saida; 
+}
 
 //------------------------------------------------------------------------------
 // devolve 1, se o conjunto dos vertices em l é uma clique em g, ou
