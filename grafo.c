@@ -452,11 +452,13 @@ lista vizinhanca_saida(vertice v){
 
 lista vizinhanca(vertice v, int direcao, grafo g){
     if (!g)
-	return 0;
+	return NULL;
+	
     if(direcao==-1)
         return vizinhanca_entrada(v);
     else if (direcao == 1 || direcao == 0)
         return vizinhanca_saida(v);
+        
     return NULL;
 }
 
