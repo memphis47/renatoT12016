@@ -420,7 +420,7 @@ grafo copia_grafo(grafo g){
 //------------------------------------------------------------------------------
 // devolve a vizinhança de entrada do vértice v
 
-lista vizinhanca_entrada(vertice v){
+static lista vizinhanca_entrada(vertice v){
     lista viz = constroi_lista();
     for (no n=primeiro_no(v->adjacencias_entrada); n!=NULL; n=proximo_no(n)) {
         adjacencia a = conteudo(n);
@@ -432,7 +432,7 @@ lista vizinhanca_entrada(vertice v){
 //------------------------------------------------------------------------------
 // devolve a vizinhança de saída do vértice v
 
-lista vizinhanca_saida(vertice v){
+static lista vizinhanca_saida(vertice v){
 
     lista viz = constroi_lista();
     for (no n=primeiro_no(v->adjacencias_saida); n!=NULL; n=proximo_no(n)) {
