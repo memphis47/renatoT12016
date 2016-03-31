@@ -160,10 +160,15 @@ static vertice cria_vertice(grafo g, const char *nome){
 //------------------------------------------------------------------------------
 // destroi um vertice
 static void destroi_vertice(vertice v){
+    printf("Destruindo vertices\n");
     destroi_lista(v->adjacencias_saida, (int (*)(void *)) destroi_vizinho);
+    printf("Destruido Saidas\n");
     destroi_lista(v->adjacencias_entrada, (int (*)(void *)) destroi_vizinho);
+    printf("Destruido Entradas\n");
     free(v->nome);
+    printf("Destruido nome\n");
     free(v);
+    printf("Destruido vertice\n");
 }
 
 //------------------------------------------------------------------------------
@@ -492,22 +497,29 @@ unsigned int grau(vertice v, int direcao, grafo g){
 int clique(lista l, grafo g){
     for (no n=primeiro_no(l); n!=NULL; n=proximo_no(n)) {
         vertice v = conteudo(n);
+        printf(" Vendo vertice = %s\n", v->nome);     
         lista vizinhos = vizinhanca(v,0,g);
         unsigned int todos_nos = tamanho_lista(l);
+        printf(" todos os nos => %d\n",todos_nos);
         for (no auxN=primeiro_no(vizinhos); auxN!=NULL; auxN=proximo_no(auxN)) {
+           // printf(" Verificando Clique\n");
             if(todos_nos == 0)
                 break;
             vertice auxV = conteudo(auxN);
             for (no verifiyNode=primeiro_no(l); verifiyNode!=NULL; verifiyNode=proximo_no(verifiyNode)) {
-                vertice verifyVertice = conteudo(n);                
-                if(strcmp(verifyVertice->nome,auxV->nome) == 0){
+                vertice verifyVertice = conteudo(verifiyNode);        
+                printf(" verifyVertice Nome = %s\n", verifyVertice->nome);       
+                printf(" auxV Nome = %s\n", auxV->nome);
+                if(strcmp(verifyVertice->nome,auxV->nome) == 0 || strcmp(verifyVertice->nome,v->nome) == 0){
                     todos_nos--;
                     break;
                 }   
             }
         }
-        if(todos_nos != 0)
+        if(todos_nos != 0){
+            printf(" todos_nos => %d \n",todos_nos);
             return 0;
+        }
     }  
     return 1;
     // faz um loop em cima de cada elemento da lista l      
@@ -545,10 +557,13 @@ int cordal(grafo g){
     unsigned int tam = copy->n_vertices;
     unsigned int i = 0 ;
     while(i < tam ){
-        if(simplicial(vertices[0],g) == 0)
+        printf("imprimindo grafo\n");
+        //escreve_grafo(stdout, copy);
+        if(simplicial(vertices[i],g) == 0)
             return 0; 
+        printf("vertice foi simplicial\n");
+        destroi_vertice(vertices[i]);
         i++;
-        destroi_vertice(vertices[0]);
     }
     return 1;
 }
