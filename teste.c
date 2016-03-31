@@ -5,23 +5,25 @@
 
 int main(void) {
 
-    grafo g = le_grafo(stdin);
+  grafo g = le_grafo(stdin);
 
-    if ( !g )
-        return 1;
+  if ( !g )
 
-    printf("nome: %s\n", nome_grafo(g));
-    printf("%sdirecionado\n", direcionado(g) ? "" : "não ");
-    printf("%sponderado\n", ponderado(g) ? "" : "não ");
-    printf("%d vértices\n", n_vertices(g));
-    printf("%d arestas\n", n_arestas(g));
+    return 1;
 
-    escreve_grafo(stdout, g);
+  printf("nome: %s\n", nome_grafo(g));
+  printf("%sdirecionado\n", direcionado(g) ? "" : "não ");
+  printf("%sponderado\n", ponderado(g) ? "" : "não ");
+  printf("%d vértices\n", n_vertices(g));
+  printf("%d arestas\n", n_arestas(g));
 
-    if(cordal(g))
+  if (!direcionado(g)){
+     if(cordal(g))
         printf("\nGrafo cordal\n");
-    else
-        printf("\nGrafo não cordal\n");        
+     else
+        printf("\nGrafo nãcordal\n");
+  }
+  escreve_grafo(stdout, g);
 
-    return ! destroi_grafo(g);
+  return ! destroi_grafo(g);
 }
