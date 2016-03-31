@@ -499,7 +499,7 @@ int clique(lista l, grafo g){
         vertice v = conteudo(n);
         printf(" Vendo vertice = %s\n", v->nome);     
         lista vizinhos = vizinhanca(v,0,g);
-        unsigned int todos_nos = tamanho_lista(l);
+        unsigned int todos_nos = tamanho_lista(l) - 1;
         printf(" todos os nos => %d\n",todos_nos);
         for (no auxN=primeiro_no(vizinhos); auxN!=NULL; auxN=proximo_no(auxN)) {
            // printf(" Verificando Clique\n");
@@ -510,7 +510,7 @@ int clique(lista l, grafo g){
                 vertice verifyVertice = conteudo(verifiyNode);        
                 printf(" verifyVertice Nome = %s\n", verifyVertice->nome);       
                 printf(" auxV Nome = %s\n", auxV->nome);
-                if(strcmp(verifyVertice->nome,auxV->nome) == 0 || strcmp(verifyVertice->nome,v->nome) == 0){
+                if(strcmp(verifyVertice->nome,auxV->nome) == 0){
                     todos_nos--;
                     break;
                 }   
@@ -537,6 +537,10 @@ int clique(lista l, grafo g){
 
 int simplicial(vertice v, grafo g){
     lista vizinhos = vizinhanca(v,0,g);
+    for (no n=primeiro_no(vizinhos); n!=NULL; n=proximo_no(n)) {
+        vertice v1 = conteudo(n);
+        printf(" \n Vendo vertice da lista = %s\n", v1->nome);
+    }     
     return clique(vizinhos,g);
 }
 
