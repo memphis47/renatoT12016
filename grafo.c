@@ -165,6 +165,8 @@ static void destroi_vertice(vertice v){
     printf("Destruido Saidas\n");
     destroi_lista(v->adjacencias_entrada, (int (*)(void *)) destroi_vizinho);
     printf("Destruido Entradas\n");
+    v->grau_saida = 0;
+    v->grau_entrada = 0;
     free(v->nome);
     printf("Destruido nome\n");
     free(v);
@@ -493,7 +495,6 @@ unsigned int grau(vertice v, int direcao, grafo g){
 //
 // um conjunto C de vértices de um grafo é uma clique em g 
 // se todo vértice em C é vizinho de todos os outros vértices de C em g
-
 int clique(lista l, grafo g){
     for (no n=primeiro_no(l); n!=NULL; n=proximo_no(n)) {
         vertice v = conteudo(n);
@@ -536,6 +537,7 @@ int clique(lista l, grafo g){
 // um vértice é simplicial no grafo se sua vizinhança é uma clique
 
 int simplicial(vertice v, grafo g){
+    printf("\n na simplicial \n \n Vertice Nome = %s\n\n", v->nome);       
     lista vizinhos = vizinhanca(v,0,g);
     for (no n=primeiro_no(vizinhos); n!=NULL; n=proximo_no(n)) {
         vertice v1 = conteudo(n);
@@ -557,16 +559,20 @@ int simplicial(vertice v, grafo g){
 
 int cordal(grafo g){
     grafo copy = copia_grafo(g);
-    vertice *vertices =  copy->vertices;
+    vertice *vertices = copy->vertices;
     unsigned int tam = copy->n_vertices;
     unsigned int i = 0 ;
+
     while(i < tam ){
         printf("imprimindo grafo\n");
-        //escreve_grafo(stdout, copy);
+       // escreve_grafo(stdout, copy);
         if(simplicial(vertices[i],g) == 0)
             return 0; 
         printf("vertice foi simplicial\n");
-        destroi_vertice(vertices[i]);
+    /*    destroi_vertice(vertices[i]);
+    	for(unsigned int j = 0; j < tam; j++){
+        	printf("Vertice Nome = %s\n", vertices[j]->nome);       
+    	}*/
         i++;
     }
     return 1;
