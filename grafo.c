@@ -170,6 +170,7 @@ static void destroi_vertice(vertice v){
     free(v->nome);
     printf("Destruido nome\n");
     free(v);
+    v =  NULL;
     printf("Destruido vertice\n");
 }
 
@@ -402,18 +403,22 @@ grafo copia_grafo(grafo g){
 		printf("Nao tem grafo. \n");
     	else{
     		//grafo copy_g = malloc(sizeof(grafo)); //aloca memoria pro grafo
-		grafo copy_g = cria_grafo(g->nome, g->direcionado, g->ponderado);
-
+		    grafo copy_g = cria_grafo(g->nome, g->direcionado, g->ponderado);
+            unsigned int realTam = 0;
     		if(copy_g == NULL){
-		    printf("Sem memoria para alocar.\n");
+		        printf("Sem memoria para alocar.\n");
     		}else{
-		    copy_g->n_vertices = g->n_vertices;
-		    copy_g->n_arestas = g->n_arestas;
 
-		    //fiquei em duvida se o for resolvia a copia ou nao D:
-		    for(unsigned int i = 0; i < g->n_vertices; i++){
-			    copy_g->vertices[i] = g->vertices[i];
-		    }
+		        copy_g->n_arestas = g->n_arestas;
+
+		        //fiquei em duvida se o for resolvia a copia ou nao D:
+		        for(unsigned int i = 0; i < g->n_vertices; i++){
+                    if(g->vertices[i] != NULL){
+			            copy_g->vertices[i] = g->vertices[i];
+                        realTam ++;
+                    }
+		        }
+                copy_g->n_vertices = realTam;
         	}
     	}	
 	return g;
@@ -562,18 +567,34 @@ int cordal(grafo g){
     vertice *vertices = copy->vertices;
     unsigned int tam = copy->n_vertices;
     unsigned int i = 0 ;
+    unsigned int last_tam = 0;
 
-    while(i < tam ){
+    while(tam > 0){
         printf("imprimindo grafo\n");
        // escreve_grafo(stdout, copy);
-        if(simplicial(vertices[i],g) == 0)
-            return 0; 
-        printf("vertice foi simplicial\n");
+        if(simplicial(vertices[i],g) == 1){
+            printf("vertice foi simplicial\n");
+            unsigned int grau = vertices[i]->grau_saida;
+            destroi_vertice(vertices[i]);
+            copy = copia_grafo(copy);
+            copy->n_arestas -= grau;
+            tam = copy->n_vertices;
+            last_tam = 0;
+        }
+        else
+            last_tam++;
     /*    destroi_vertice(vertices[i]);
     	for(unsigned int j = 0; j < tam; j++){
         	printf("Vertice Nome = %s\n", vertices[j]->nome);       
     	}*/
         i++;
+        if(i >= tam){ 
+             if( last_tam == tam )
+                return 0;
+             i = 0;
+        }
+            
     }
+    destroi_grafo(copy);
     return 1;
 }
