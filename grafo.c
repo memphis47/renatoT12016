@@ -9,9 +9,6 @@
 // tamanho máximo da string para representar o peso de uma aresta/arco
 #define MAX_STRING_SIZE 256
 
-// número de vértices alocados por vez (para evitar realloc's constantemente)
-#define VERTICE_BLOC 64
-
 //------------------------------------------------------------------------------
 // (apontador para) estrutura de dados para representar um grafo
 //
@@ -55,7 +52,7 @@ typedef struct adjacencia{
 //------------------------------------------------------------------------------
 // cria e devolve um  grafo g
 
-static grafo cria_grafo(const char *nome, int direcionado, int ponderado){
+static grafo cria_grafo(const char *nome, int direcionado, int ponderado, int total_vertices){
     grafo g = malloc(sizeof(struct grafo)); //aloca memoria pro grafo
 
     if(g == NULL)
@@ -67,9 +64,11 @@ static grafo cria_grafo(const char *nome, int direcionado, int ponderado){
     g->ponderado = ponderado;
     g->n_vertices = 0;
     g->n_arestas = 0;
-    g->vertices = malloc(VERTICE_BLOC * sizeof(vertice));
+    g->vertices = malloc((unsigned int)total_vertices* sizeof(vertice));
 
     return g;
+    free(g->nome);
+    free(g);
 }
 
 //------------------------------------------------------------------------------
@@ -85,7 +84,7 @@ static void cria_vizinhanca(grafo g, vertice origem, vertice destino, long int p
     	viz_1->peso = peso;
     	viz_1->v_origem = origem;
     	viz_1->v_destino = destino;
-   	    insere_lista(viz_1, origem->adjacencias_saida);
+   	insere_lista(viz_1, origem->adjacencias_saida);
     	origem->grau_saida++;
     	destino->grau_entrada++;
 
@@ -103,10 +102,10 @@ static void cria_vizinhanca(grafo g, vertice origem, vertice destino, long int p
         		insere_lista(viz_2, destino->adjacencias_saida);
         		destino->grau_saida++;
         		origem->grau_entrada++;
-            }
+            	}
         }
-   	    else{
-        	adjacencia viz_3 = malloc(sizeof(struct adjacencia));
+	else{
+		adjacencia viz_3 = malloc(sizeof(struct adjacencia));
     		if(viz_3 == NULL)
 			printf("Sem memoria");
     		else{
@@ -114,7 +113,7 @@ static void cria_vizinhanca(grafo g, vertice origem, vertice destino, long int p
         		viz_3->v_origem = origem;
         		viz_3->v_destino = destino;
         		insere_lista(viz_3, destino->adjacencias_entrada);
-            }
+            	}
         }
     }
     g->n_arestas++;
@@ -140,21 +139,18 @@ static vertice cria_vertice(grafo g, const char *nome){
 		v->nome = malloc((strlen(nome) +1) *sizeof(char));
 		strcpy(v->nome, nome);
 		v->adjacencias_saida = constroi_lista();
-        v->adjacencias_entrada = constroi_lista();
-        v->grau_entrada = 0;
-        v->grau_saida = 0;
+        	v->adjacencias_entrada = constroi_lista();
+        	v->grau_entrada = 0;
+        	v->grau_saida = 0;
 		v->removido = 0;
 		g->vertices[v->id] = v;
 		g->n_vertices++;
 
-		if ((g->n_vertices % VERTICE_BLOC) == 0) {
-        		long unsigned int novo_tamanho = (g->n_vertices / VERTICE_BLOC + 1) * VERTICE_BLOC * sizeof(vertice);
-        		g->vertices = realloc(g->vertices, novo_tamanho);
-    		}
-
 	}
 
 	return v;
+	free(v->nome);
+	free(v);
 }
 
 //------------------------------------------------------------------------------
@@ -202,8 +198,8 @@ static int contem_pesos(Agraph_t *Ag) {
     strcpy(p_str, "peso");
 
     for ( Agsym_t *sym = agnxtattr(Ag, AGEDGE, NULL);
-          sym;
-          sym = agnxtattr(Ag, AGEDGE, sym) ) {
+        sym;
+        sym = agnxtattr(Ag, AGEDGE, sym) ) {
         if (strcmp(sym->name, p_str) == 0)
             return 1;
     }
@@ -285,20 +281,20 @@ grafo le_grafo(FILE *input){
 	if(!Ag)
 		return NULL;
 
-	grafo g = cria_grafo(agnameof(Ag), agisdirected(Ag), contem_pesos(Ag));
+	grafo g = cria_grafo(agnameof(Ag), agisdirected(Ag), contem_pesos(Ag), agnnodes(Ag));
 
 	for (Agnode_t *Av=agfstnode(Ag); Av; Av=agnxtnode(Ag,Av)) {
         	cria_vertice(g, agnameof(Av));
 	}
 
     	for (Agnode_t *Av=agfstnode(Ag); Av; Av=agnxtnode(Ag,Av)) {
-        	for (Agedge_t *Ae=agfstout(Ag,Av); Ae; Ae=agnxtout(Ag,Ae)) {
-            		vertice u = v_busca(g, agnameof(agtail(Ae)));
-            		vertice v = v_busca(g, agnameof(aghead(Ae)));
-            		cria_vizinhanca(g, u, v, get_peso(Ae));
-        	}
+       		for (Agedge_t *Ae=agfstout(Ag,Av); Ae; Ae=agnxtout(Ag,Ae)) {
+           		vertice u = v_busca(g, agnameof(agtail(Ae)));
+           		vertice v = v_busca(g, agnameof(aghead(Ae)));
+           		cria_vizinhanca(g, u, v, get_peso(Ae));
+       		}
     	}
-
+	
 	agclose(Ag);
 	return g;
 }  
@@ -394,10 +390,23 @@ grafo escreve_grafo(FILE *output, grafo g){
 // devolve um grafo igual a g
 
 grafo copia_grafo(grafo g){
-	if (!g)
+	if(!g)
 		return NULL;
 	
-	return g;
+	grafo copy = cria_grafo(g->nome, g->direcionado, g->ponderado, (int)g->n_vertices);
+
+    	if(copy == NULL){
+    		printf("Sem memoria para alocar.\n");
+    	}else{
+		copy->n_vertices = g->n_vertices;
+		copy->n_arestas = g->n_arestas;
+
+		for(unsigned int i = 0; i < g->n_vertices; i++){
+			copy->vertices[i] = g->vertices[i];
+		}
+	}
+	return copy;
+	free(copy);
 }
 
 //------------------------------------------------------------------------------
@@ -441,7 +450,7 @@ static lista vizinhanca_saida(vertice v){
 
 lista vizinhanca(vertice v, int direcao, grafo g){
     if (!g)
-	return NULL;
+		return NULL;
 	
     if(direcao==-1)
         return vizinhanca_entrada(v);
@@ -464,8 +473,8 @@ lista vizinhanca(vertice v, int direcao, grafo g){
 //                  e a função devolve seu grau de saída
 
 unsigned int grau(vertice v, int direcao, grafo g){
-    	if (!g)
-		return 0;
+	if (!g)
+    		return 0;
 	if(direcao < 0)
 		return v->grau_entrada;
 	else
@@ -478,6 +487,12 @@ unsigned int grau(vertice v, int direcao, grafo g){
 //
 // um conjunto C de vértices de um grafo é uma clique em g 
 // se todo vértice em C é vizinho de todos os outros vértices de C em g
+
+    // faz um loop em cima de cada elemento da lista l      
+    // para cada elemento pega sua vizinhaca
+    // se a vizinhaca conter todos os elementos da lista l continua
+    // se não conter retorna 0
+	
 int clique(lista l, grafo g){
     for (no n=primeiro_no(l); n!=NULL; n=proximo_no(n)) {
         vertice v = conteudo(n);
@@ -506,11 +521,6 @@ int clique(lista l, grafo g){
 		}
     }  
     return 1;
-    // faz um loop em cima de cada elemento da lista l      
-    // para cada elemento pega sua vizinhaca
-    // se a vizinhaca conter todos os elementos da lista l continua
-    // se não conter retorna 0
-
 }
 
 //------------------------------------------------------------------------------
@@ -536,26 +546,34 @@ int simplicial(vertice v, grafo g){
 //     v_i é simplicial em G - v_1 - ... - v_{i-1}
 
 int cordal(grafo g){
-    unsigned int tam = g->n_vertices;
-    unsigned int i = 0 ;
-    unsigned int last_tam = 0;
+	grafo copy = copia_grafo(g);
+	unsigned int tam = g->n_vertices;
+	unsigned int i = 0 ;
+	unsigned int last_tam = 0;
 
-    while(tam > 0){
-        if(simplicial(g->vertices[i],g) == 1){
-			g->vertices[i]->removido = 1;
+	while(tam > 0){
+        	if(simplicial(copy->vertices[i],copy) == 1){
+			copy->vertices[i]->removido = 1;
 			tam --;
-        }
-        else
-            last_tam++;
-
-        i++;
-        if(i >= tam){ 
-             if( last_tam == tam )
-                return 0;
-             i = 0;
-        }
-            
-    }
-
+        	}
+        	else{
+            		last_tam++;
+		}
+		
+        	i++;
+		
+        	if(i >= tam){
+            		if( last_tam == tam){
+		                return 0;
+			}
+			//Se percorrer todas 2*arestas do grafo
+			// e nao achar mais ou nenhuma simplifical, não tem cordal
+			if(last_tam >= (2*g->n_arestas)){
+				return 0;
+			}
+            		i = 0;
+        	}   
+    	}
+	
     return 1;
 }
