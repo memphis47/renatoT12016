@@ -1,6 +1,7 @@
 #ifndef _GRAFO_H
 #define _GRAFO_H
 
+#include <stdio.h>
 #include "lista.h"
 
 //------------------------------------------------------------------------------
@@ -106,7 +107,7 @@ grafo escreve_grafo(FILE *output, grafo g);
 grafo copia_grafo(grafo g);
 
 //------------------------------------------------------------------------------
-// devolve a vizinhança do vértice v
+// devolve a vizinhança do vértice v no grafo g
 // 
 // se direcao == 0, v é um vértice de um grafo não direcionado
 //                  e a função devolve sua vizinhanca 
@@ -120,7 +121,7 @@ grafo copia_grafo(grafo g);
 lista vizinhanca(vertice v, int direcao, grafo g);
 
 //------------------------------------------------------------------------------
-// devolve o grau do vértice v
+// devolve o grau do vértice v no grafo g
 // 
 // se direcao == 0, v é um vértice de um grafo não direcionado
 //                  e a função devolve seu grau
