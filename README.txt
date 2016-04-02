@@ -72,4 +72,4 @@ Implementação:
 		Devolve a vizinhança de saída do vértice v
 
 Bugs Conhecidos:
-	Foram feitos vários testes com vários tamanhos de grafos, cordais, não cordais, direcionados, não direcionados, ponderados e não ponderados. Nestes testes, os bugs encontrados foram resolvidos, então neste momento não há nenhum bu
+	Foram feitos vários testes com vários tamanhos de grafos, cordais, não cordais, direcionados, não direcionados, ponderados e não ponderados. Nestes testes, os bugs encontrados foram resolvidos, então neste momento não há nenhum bugs conhecidos nesta presente versão.
