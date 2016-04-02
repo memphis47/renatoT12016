@@ -39,7 +39,7 @@ struct grafo{
 struct vertice{
 	char *nome; // nome do vertice
 	unsigned int id; // id = posição do vertice no vetor de vertices do grafo, serve para facilitar a busca de vertices
-	int padding; // padding para alinhar a struct
+	int removido; // se for 1 a aresta do grafo foi removida, se for 0, nao
 	lista adjacencias_entrada;
 	lista adjacencias_saida;
 	unsigned int grau_entrada; // grau do vertice
@@ -85,7 +85,7 @@ static void cria_vizinhanca(grafo g, vertice origem, vertice destino, long int p
     	viz_1->peso = peso;
     	viz_1->v_origem = origem;
     	viz_1->v_destino = destino;
-   	insere_lista(viz_1, origem->adjacencias_saida);
+   	    insere_lista(viz_1, origem->adjacencias_saida);
     	origem->grau_saida++;
     	destino->grau_entrada++;
 
@@ -103,9 +103,9 @@ static void cria_vizinhanca(grafo g, vertice origem, vertice destino, long int p
         		insere_lista(viz_2, destino->adjacencias_saida);
         		destino->grau_saida++;
         		origem->grau_entrada++;
-		}
-    	}
-   	else{
+            }
+        }
+   	    else{
         	adjacencia viz_3 = malloc(sizeof(struct adjacencia));
     		if(viz_3 == NULL)
 			printf("Sem memoria");
@@ -114,10 +114,10 @@ static void cria_vizinhanca(grafo g, vertice origem, vertice destino, long int p
         		viz_3->v_origem = origem;
         		viz_3->v_destino = destino;
         		insere_lista(viz_3, destino->adjacencias_entrada);
-		}
-    	}
-   }
-   g->n_arestas++;
+            }
+        }
+    }
+    g->n_arestas++;
 }
 
 //------------------------------------------------------------------------------
@@ -140,10 +140,10 @@ static vertice cria_vertice(grafo g, const char *nome){
 		v->nome = malloc((strlen(nome) +1) *sizeof(char));
 		strcpy(v->nome, nome);
 		v->adjacencias_saida = constroi_lista();
-                v->adjacencias_entrada = constroi_lista();
-                v->grau_entrada = 0;
-                v->grau_saida = 0;
-
+        v->adjacencias_entrada = constroi_lista();
+        v->grau_entrada = 0;
+        v->grau_saida = 0;
+		v->removido = 0;
 		g->vertices[v->id] = v;
 		g->n_vertices++;
 
@@ -160,18 +160,13 @@ static vertice cria_vertice(grafo g, const char *nome){
 //------------------------------------------------------------------------------
 // destroi um vertice
 static void destroi_vertice(vertice v){
-    printf("Destruindo vertices\n");
     destroi_lista(v->adjacencias_saida, (int (*)(void *)) destroi_vizinho);
-    printf("Destruido Saidas\n");
     destroi_lista(v->adjacencias_entrada, (int (*)(void *)) destroi_vizinho);
-    printf("Destruido Entradas\n");
     v->grau_saida = 0;
     v->grau_entrada = 0;
     free(v->nome);
-    printf("Destruido nome\n");
     free(v);
     v =  NULL;
-    printf("Destruido vertice\n");
 }
 
 //------------------------------------------------------------------------------
@@ -399,28 +394,9 @@ grafo escreve_grafo(FILE *output, grafo g){
 // devolve um grafo igual a g
 
 grafo copia_grafo(grafo g){
-	if(g == NULL)
-		printf("Nao tem grafo. \n");
-    	else{
-    		//grafo copy_g = malloc(sizeof(grafo)); //aloca memoria pro grafo
-		    grafo copy_g = cria_grafo(g->nome, g->direcionado, g->ponderado);
-            unsigned int realTam = 0;
-    		if(copy_g == NULL){
-		        printf("Sem memoria para alocar.\n");
-    		}else{
-
-		        copy_g->n_arestas = g->n_arestas;
-
-		        //fiquei em duvida se o for resolvia a copia ou nao D:
-		        for(unsigned int i = 0; i < g->n_vertices; i++){
-                    if(g->vertices[i] != NULL){
-			            copy_g->vertices[i] = g->vertices[i];
-                        realTam ++;
-                    }
-		        }
-                copy_g->n_vertices = realTam;
-        	}
-    	}	
+	if (!g)
+		return NULL;
+	
 	return g;
 }
 
@@ -443,8 +419,10 @@ static lista vizinhanca_saida(vertice v){
 
     lista viz = constroi_lista();
     for (no n=primeiro_no(v->adjacencias_saida); n!=NULL; n=proximo_no(n)) {
-        adjacencia a = conteudo(n);
-        insere_lista(a->v_destino, viz);
+    	if(n != NULL){
+        	adjacencia a = conteudo(n);
+        	insere_lista(a->v_destino, viz);
+        }
     }        
     return viz;
 }
@@ -503,29 +481,29 @@ unsigned int grau(vertice v, int direcao, grafo g){
 int clique(lista l, grafo g){
     for (no n=primeiro_no(l); n!=NULL; n=proximo_no(n)) {
         vertice v = conteudo(n);
-        printf(" Vendo vertice = %s\n", v->nome);     
-        lista vizinhos = vizinhanca(v,0,g);
-        unsigned int todos_nos = tamanho_lista(l) - 1;
-        printf(" todos os nos => %d\n",todos_nos);
-        for (no auxN=primeiro_no(vizinhos); auxN!=NULL; auxN=proximo_no(auxN)) {
-           // printf(" Verificando Clique\n");
-            if(todos_nos == 0)
-                break;
-            vertice auxV = conteudo(auxN);
-            for (no verifiyNode=primeiro_no(l); verifiyNode!=NULL; verifiyNode=proximo_no(verifiyNode)) {
-                vertice verifyVertice = conteudo(verifiyNode);        
-                printf(" verifyVertice Nome = %s\n", verifyVertice->nome);       
-                printf(" auxV Nome = %s\n", auxV->nome);
-                if(strcmp(verifyVertice->nome,auxV->nome) == 0){
-                    todos_nos--;
-                    break;
-                }   
-            }
-        }
-        if(todos_nos != 0){
-            printf(" todos_nos => %d \n",todos_nos);
-            return 0;
-        }
+		if(v->removido == 0){	
+			lista vizinhos = vizinhanca(v,0,g);
+			unsigned int todos_nos = tamanho_lista(l) - 1;
+			for (no auxN=primeiro_no(vizinhos); auxN!=NULL; auxN=proximo_no(auxN)) {
+				if(todos_nos == 0)
+					break;
+				vertice auxV = conteudo(auxN);
+				if(auxV->removido == 0){
+					for (no verifiyNode=primeiro_no(l); verifiyNode!=NULL; verifiyNode=proximo_no(verifiyNode)) {
+						vertice verifyVertice = conteudo(verifiyNode);   
+						if(verifyVertice->removido == 0){
+							if(strcmp(verifyVertice->nome,auxV->nome) == 0){
+								todos_nos--;
+								break;
+							}   
+						}
+					}
+				}
+			}
+			if(todos_nos != 0){
+				return 0;
+			}
+		}
     }  
     return 1;
     // faz um loop em cima de cada elemento da lista l      
@@ -541,13 +519,8 @@ int clique(lista l, grafo g){
 //
 // um vértice é simplicial no grafo se sua vizinhança é uma clique
 
-int simplicial(vertice v, grafo g){
-    printf("\n na simplicial \n \n Vertice Nome = %s\n\n", v->nome);       
-    lista vizinhos = vizinhanca(v,0,g);
-    for (no n=primeiro_no(vizinhos); n!=NULL; n=proximo_no(n)) {
-        vertice v1 = conteudo(n);
-        printf(" \n Vendo vertice da lista = %s\n", v1->nome);
-    }     
+int simplicial(vertice v, grafo g){       
+    lista vizinhos = vizinhanca(v,0,g);    
     return clique(vizinhos,g);
 }
 
@@ -563,30 +536,18 @@ int simplicial(vertice v, grafo g){
 //     v_i é simplicial em G - v_1 - ... - v_{i-1}
 
 int cordal(grafo g){
-    grafo copy = copia_grafo(g);
-    vertice *vertices = copy->vertices;
-    unsigned int tam = copy->n_vertices;
+    unsigned int tam = g->n_vertices;
     unsigned int i = 0 ;
     unsigned int last_tam = 0;
 
     while(tam > 0){
-        printf("imprimindo grafo\n");
-       // escreve_grafo(stdout, copy);
-        if(simplicial(vertices[i],g) == 1){
-            printf("vertice foi simplicial\n");
-            unsigned int grau = vertices[i]->grau_saida;
-            destroi_vertice(vertices[i]);
-            copy = copia_grafo(copy);
-            copy->n_arestas -= grau;
-            tam = copy->n_vertices;
-            last_tam = 0;
+        if(simplicial(g->vertices[i],g) == 1){
+			g->vertices[i]->removido = 1;
+			tam --;
         }
         else
             last_tam++;
-    /*    destroi_vertice(vertices[i]);
-    	for(unsigned int j = 0; j < tam; j++){
-        	printf("Vertice Nome = %s\n", vertices[j]->nome);       
-    	}*/
+
         i++;
         if(i >= tam){ 
              if( last_tam == tam )
@@ -595,6 +556,6 @@ int cordal(grafo g){
         }
             
     }
-    destroi_grafo(copy);
+
     return 1;
 }
