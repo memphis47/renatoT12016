@@ -296,6 +296,7 @@ grafo le_grafo(FILE *input){
     	}
 	
 	agclose(Ag);
+	agfree(Ag, NULL);
 	return g;
 }  
 
@@ -382,7 +383,7 @@ grafo escreve_grafo(FILE *output, grafo g){
 	free(nodes);
 	agwrite(ag, output);
 	agclose(ag);
-
+	agfree(ag, NULL);
 	return g;
 }
 
