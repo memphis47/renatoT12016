@@ -1,6 +1,6 @@
  +------------------------------------------------------------------+
- | Katheryne Louise Graf - GRR20120706 - Indentificador: klg12		|
- | Rafael Rocha de Carvalho - GRR20XXXXXX	- Indentificador: rrcXX |
+ | Katheryne Louise Graf - GRR20120706 - Indentificador: klg12      |
+ | Rafael Rocha de Carvalho - GRR20104490 - Indentificador: rrc10   |
  | 1º Trabalho de CI065 - 2016/1									|
  +------------------------------------------------------------------+
 
