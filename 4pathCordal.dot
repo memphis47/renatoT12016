@@ -1,0 +1,5 @@
+strict graph "cordal1" {
+    A -- B
+    B -- C
+    C -- D
+}

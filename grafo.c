@@ -495,11 +495,12 @@ unsigned int grau(vertice v, int direcao, grafo g){
     // se não conter retorna 0
 	
 int clique(lista l, grafo g){
+    unsigned int removed = 0;
     for (no n=primeiro_no(l); n!=NULL; n=proximo_no(n)) {
         vertice v = conteudo(n);
 		if(v->removido == 0){	
 			lista vizinhos = vizinhanca(v,0,g);
-			unsigned int todos_nos = tamanho_lista(l) - 1;
+            unsigned int todos_nos = tamanho_lista(l) - removed - 1;
 			for (no auxN=primeiro_no(vizinhos); auxN!=NULL; auxN=proximo_no(auxN)) {
 				if(todos_nos == 0)
 					break;
@@ -520,6 +521,9 @@ int clique(lista l, grafo g){
 				return 0;
 			}
 		}
+        else{
+           removed ++;        
+        }
     }  
     return 1;
 }
@@ -553,28 +557,33 @@ int cordal(grafo g){
 	unsigned int last_tam = 0;
 
 	while(tam > 0){
+        if(copy->vertices[i]->removido == 0){
         	if(simplicial(copy->vertices[i],copy) == 1){
-			copy->vertices[i]->removido = 1;
-			tam --;
+		        copy->vertices[i]->removido = 1;
+		        tam --;
         	}
-        	else{
-            		last_tam++;
-		}
-		
+	
         	i++;
-		
-        	if(i >= tam){
-            		if( last_tam == tam){
-		                return 0;
-			}
-			//Se percorrer todas 2*arestas do grafo
-			// e nao achar mais ou nenhuma simplifical, não tem cordal
-			if(last_tam >= (2*g->n_arestas)){
-				return 0;
-			}
-            		i = 0;
-        	}   
-    	}
+	
+        	if(i >= g->n_vertices){
+                if(tam > 0 && last_tam == tam){
+                    return 0;
+		        }
+		        //Se percorrer todas 2*arestas do grafo
+		        // e nao achar mais ou nenhuma simplifical, não tem cordal
+		        if(last_tam >= (2*g->n_arestas)){
+			        return 0;
+		        }
+                last_tam = tam;
+		        i = 0;
+        	}
+        }
+        else if ( i < g->n_vertices-1){
+             i++;   
+        }
+        else 
+            return 1; // se todos vertices removidos entao eh cordal
+	}
 	
     return 1;
 }
